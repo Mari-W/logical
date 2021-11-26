@@ -70,6 +70,10 @@ impl Formula {
         return Formula::Neg(Box::new(f));
     }
 
+    pub fn var(s: &str) -> Self {
+        return Formula::Var(s.into());
+    }
+
     pub fn and(l: Formula, r: Formula) -> Self {
         return Formula::And(Box::new(l), Box::new(r));
     }
