@@ -43,9 +43,9 @@ peg::parser! {
             / x:ident() { Formula::Var(x) }
 
         rule op() -> Formula
-            = "~" f:formula() { Formula::neg(f) }
-            / "¬" f:formula() { Formula::neg(f) }
-            / "¬" f:formula() { Formula::neg(f) }
+            = "~" f:formula() { Formula::negate(f) }
+            / "¬" f:formula() { Formula::negate(f) }
+            / "¬" f:formula() { Formula::negate(f) }
             / "(" _ f1:formula() _ "&" _ f2:formula() _ ")" { Formula::and(f1, f2) }
             / "(" _ f1:formula() _ "∧" _ f2:formula() _ ")" { Formula::and(f1, f2) }
             / "(" _ f1:formula() _ "|" _ f2:formula() _ ")" { Formula::or(f1, f2) }
@@ -66,11 +66,11 @@ impl Formula {
         parser::formula(s).map_err(|e| format! {"{:#?}", e})
     }
 
-    pub fn neg(f: Formula) -> Self {
+    pub fn negate(f: Formula) -> Self {
         return Formula::Neg(Box::new(f));
     }
 
-    pub fn var(s: &str) -> Self {
+    pub fn variable(s: &str) -> Self {
         return Formula::Var(s.into());
     }
 
@@ -153,10 +153,10 @@ impl Formula {
             for (x, v) in vars.into_iter() {
                 match f {
                     Formula::False => {
-                        f = if *v { Formula::Var(x.to_string()) } else { Formula::neg(Formula::Var(x.to_string())) }
+                        f = if *v { Formula::Var(x.to_string()) } else { Formula::negate(Formula::Var(x.to_string())) }
                     }
                     Formula::Var(_) | Formula::And(_, _) | Formula::Neg(_) => {
-                        f = if *v { Formula::and(f.clone(), Formula::Var(x.to_string())) } else { Formula::and(f.clone(), Formula::neg(Formula::Var(x.to_string()))) }
+                        f = if *v { Formula::and(f.clone(), Formula::Var(x.to_string())) } else { Formula::and(f.clone(), Formula::negate(Formula::Var(x.to_string()))) }
                     }
                     _ => panic!("_this_ should not have happened!")
                 }
@@ -175,7 +175,7 @@ impl Formula {
                 Formula::And(_, _) | Formula::Or(_, _) => {
                     kdnf = Formula::or(kdnf.clone(), assignment_to_conjunction(k))
                 }
-                _ => panic!("")
+                _ => panic!("_this_ should not have happened!")
             }
         }
         kdnf
